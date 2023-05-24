@@ -4,18 +4,12 @@ package com.dafinrs.hackermu.domains.repository_impl
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.dafinrs.hackermu.data.remote.StoriesRemote
-import com.dafinrs.hackermu.data.repository.StoryRepository
 import com.dafinrs.hackermu.domains.models.StoryModel
-import kotlinx.coroutines.CoroutineStart
-import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.supervisorScope
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
-import kotlinx.coroutines.yield
-import org.json.JSONException
 
 
 class StoryRepositoryImpl @Inject constructor(
@@ -39,25 +33,22 @@ class StoryRepositoryImpl @Inject constructor(
             try {
                 val nextPage = params.key ?: 0
                 val loadSize = params.loadSize
+                var stories = listOf<StoryModel>()
                 addIds()
-                var test = listOf<StoryModel>()
 
                 supervisorScope {
                     val listStories = listTenItem(nextPage, loadSize).map {
                         async { storiesRemote.getStory(it) }
                     }.toList()
-                    val toListStoryModel = listStories.map { it.await() }.mapNotNull { it }
+                    stories = listStories.map { it.await() }.mapNotNull { it }
                         .filter { it.url?.isNotBlank() ?: false }.toList()
-                    test = toListStoryModel
                 }
 
                 return@withContext LoadResult.Page(
-                    data = test,
+                    data = stories,
                     prevKey = null,
                     nextKey = if (nextPage < ids.size) nextPage.plus(loadSize) else null,
                 )
-            } catch (error: JSONException) {
-                return@withContext LoadResult.Error(error)
             } catch (error: Exception) {
                 return@withContext LoadResult.Error(error)
             }
