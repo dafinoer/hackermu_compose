@@ -11,7 +11,6 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
-import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
 @Module
@@ -29,10 +28,8 @@ object NetworkModule {
             host("hacker-news.firebaseio.com")
             addPathSegment("v0/")
             addPathSegment(path)
-            if (queryParams.isNotEmpty()) {
-                for (query in queryParams) {
-                    addQueryParameter(query.key, query.value)
-                }
+            queryParams.forEach {
+                addQueryParameter(it.key, it.value)
             }
         }.build()
 
