@@ -29,24 +29,26 @@ const val DETAIL_SCREEN_PAGE_ROUTE = "/detail"
 fun DetailScreenPage(
     modifier: Modifier = Modifier,
     onBack: () -> Unit,
-    isBack: Boolean = false,
     url: String?,
 ) {
     Scaffold(topBar = {
         TopAppBar(modifier = Modifier.fillMaxWidth(), title = {
             Text(text = "Url")
         }, navigationIcon = {
-            if (isBack) IconButton(onClick = onBack) {
+            IconButton(onClick = onBack) {
                 Icon(imageVector = Icons.Rounded.ArrowBack, contentDescription = "Back")
             }
         })
     }) {
         if (url != null) {
-            AndroidView(modifier = modifier.padding(it), factory = {
-                WebView(it).apply {
-                    loadUrl(url)
-                }
-            })
+            AndroidView(
+                modifier = modifier.padding(it),
+                factory = {
+                    WebView(it).apply {
+                        loadUrl(url)
+                    }
+                },
+            )
         } else {
             Column(
                 modifier = modifier

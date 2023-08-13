@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -13,6 +14,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import androidx.paging.compose.collectAsLazyPagingItems
 import com.dafinrs.hackermu.pages.detail.DETAIL_SCREEN_PAGE_ROUTE
 import com.dafinrs.hackermu.pages.detail.DetailScreenPage
 import com.dafinrs.hackermu.pages.home.HOME_SCREEN_PAGE
@@ -47,11 +49,9 @@ fun HackerMuNavHost(
         startDestination = startDestination,
     ) {
         composable(HOME_SCREEN_PAGE) {
-            HomeScreenPage(
-                onNavigateDetail = {
-                    navController.navigate("$DETAIL_SCREEN_PAGE_ROUTE?urlStory=$it")
-                },
-            )
+            HomeScreenPage {
+                navController.navigate("$DETAIL_SCREEN_PAGE_ROUTE?urlStory=$it")
+            }
         }
         composable(
             "$DETAIL_SCREEN_PAGE_ROUTE?urlStory={urlLink}",
@@ -61,7 +61,6 @@ fun HackerMuNavHost(
         ) {
             DetailScreenPage(
                 url = it.arguments?.getString("urlLink"),
-                isBack = true,
                 onBack = {
                     navController.popBackStack()
                 },

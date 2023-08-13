@@ -11,10 +11,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.paging.CombinedLoadStates
 import androidx.paging.LoadState
+import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemContentType
 import com.dafinrs.hackermu.composes.CardTile
+import com.dafinrs.hackermu.domains.models.StoryModel
 import com.dafinrs.hackermu.presents.news.StoryNewsViewModel
 import com.dafinrs.hackermu.ui.theme.HackermuTheme
 
@@ -22,18 +25,16 @@ import com.dafinrs.hackermu.ui.theme.HackermuTheme
 @Composable
 fun ContentStory(
     modifier: Modifier = Modifier,
-    storyViewModel: StoryNewsViewModel = hiltViewModel(),
+    lazyListflow: LazyPagingItems<StoryModel>,
     onOpenUrl: (String) -> Unit,
 ) {
-    val stories = storyViewModel.flowList().collectAsLazyPagingItems()
-
 
     LazyColumn(
         modifier = modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        when (val state = stories.loadState.refresh) {
+        when (val state = lazyListflow.loadState.refresh) {
             is LoadState.NotLoading -> Unit
             is LoadState.Loading -> {
                 item {
@@ -48,7 +49,7 @@ fun ContentStory(
             }
         }
 
-        when (val state = stories.loadState.prepend) {
+        when (val state = lazyListflow.loadState.prepend) {
             is LoadState.NotLoading -> Unit
             is LoadState.Loading -> {
                 item { LoadingContent() }
@@ -60,21 +61,22 @@ fun ContentStory(
         }
 
         items(
-            count = stories.itemCount,
-            contentType = stories.itemContentType(),
-
-            ) {
-            CardTile(title = stories[it]?.title ?: "",
-                subTitle = stories[it]?.url ?: "",
+            count = lazyListflow.itemCount,
+            contentType = lazyListflow.itemContentType(),
+        ) {
+            CardTile(
+                title = lazyListflow[it]?.title ?: "",
+                subTitle = lazyListflow[it]?.url ?: "",
                 onClick = {
-                    val urlStory = stories[it]?.url
+                    val urlStory = lazyListflow[it]?.url
                     if (urlStory != null) {
                         onOpenUrl(urlStory)
                     }
-                })
+                },
+            )
         }
 
-        when (val state = stories.loadState.append) {
+        when (val state = lazyListflow.loadState.append) {
             is LoadState.NotLoading -> Unit
             is LoadState.Loading -> item { CircularProgressIndicator() }
             is LoadState.Error -> item { Text(text = state.error.message ?: "") }
